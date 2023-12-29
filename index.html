@@ -94,15 +94,16 @@
       word-wrap: break-word; /* Added to handle long sentences */
     }
 
-    #commentCounts {
+    .notification {
       position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #4caf50;
+      color: #fff;
       padding: 10px;
-      color: #333; /* Text color */
-      font-size: 16px; /* Adjust as needed */
-      background: none; /* Remove background */
-      border: none; /* Remove border */
-      top: 0;
-      right: 0;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
     }
   </style>
 </head>
@@ -125,76 +126,88 @@
 
   <!-- ... (your existing HTML code) ... -->
 
-<script>
-  const dbName = 'commentsDatabase';
-  let db;
+  <script>
+    const dbName = 'commentsDatabase';
+    let db;
 
-  const request = indexedDB.open(dbName, 1);
+    const request = indexedDB.open(dbName, 1);
 
-  request.onerror = function(event) {
-    console.error("Database error: " + event.target.errorCode);
-  };
+    request.onerror = function (event) {
+      console.error("Database error: " + event.target.errorCode);
+    };
 
-  request.onupgradeneeded = function(event) {
-    const db = event.target.result;
+    request.onupgradeneeded = function (event) {
+      const db = event.target.result;
 
-    db.createObjectStore("comments", { keyPath: "id", autoIncrement: true });
-  };
+      db.createObjectStore("comments", { keyPath: "id", autoIncrement: true });
+    };
 
-  request.onsuccess = function(event) {
-    db = event.target.result;
+    request.onsuccess = function (event) {
+      db = event.target.result;
 
-    function leaveComment() {
-      const commentText = document.getElementById('comment').value;
+      function leaveComment() {
+        const commentText = document.getElementById('comment').value;
 
-      const transaction = db.transaction(["comments"], "readwrite");
-      const objectStore = transaction.objectStore("comments");
+        const transaction = db.transaction(["comments"], "readwrite");
+        const objectStore = transaction.objectStore("comments");
 
-      const comment = { text: commentText };
-      const addRequest = objectStore.add(comment);
+        const comment = { text: commentText };
+        const addRequest = objectStore.add(comment);
 
-      addRequest.onsuccess = function() {
-        alert("Comment submitted successfully!");
-        document.getElementById('commentForm').reset();
-        displayComments();
-      };
+        addRequest.onsuccess = function () {
+          showNotification("Comment submitted successfully!");
+          document.getElementById('commentForm').reset();
+          displayComments();
+        };
 
-      addRequest.onerror = function() {
-        alert("Error submitting comment. Please try again.");
-      };
-    }
+        addRequest.onerror = function () {
+          showNotification("Error submitting comment. Please try again.");
+        };
+      }
 
-    function displayComments() {
-      const commentsContainer = document.getElementById('comments');
-      commentsContainer.innerHTML = "";
+      function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
 
-      const objectStore = db.transaction("comments").objectStore("comments");
+        // Remove the notification after a few seconds
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 3000); // Adjust the duration as needed
+      }
 
-      objectStore.openCursor().onsuccess = function(event) {
-        const cursor = event.target.result;
+      function displayComments() {
+        const commentsContainer = document.getElementById('comments');
+        commentsContainer.innerHTML = "";
 
-        if (cursor) {
-          const comment = document.createElement('div');
-          comment.innerHTML = `
+        const objectStore = db.transaction("comments").objectStore("comments");
+
+        objectStore.openCursor().onsuccess = function (event) {
+          const cursor = event.target.result;
+
+          if (cursor) {
+            const comment = document.createElement('div');
+            comment.innerHTML = `
             <p>${cursor.value.text}</p>
           `;
-          commentsContainer.appendChild(comment);
+            commentsContainer.appendChild(comment);
 
-          cursor.continue();
-        }
-      };
-    }
+            cursor.continue();
+          }
+        };
+      }
 
-    // Display existing comments on page load
-    displayComments();
+      // Display existing comments on page load
+      displayComments();
 
-    // Add event listener for button click
-    document.getElementById('submitCommentBtn').addEventListener('click', leaveComment);
-  };
-</script><!-- ... (your existing HTML code) ... -->
-
+      // Add event listener for button click
+      document.getElementById('submitCommentBtn').addEventListener('click', leaveComment);
+    };
+  </script><!-- ... (your existing HTML code) ... -->
 
 </body>
-<footer> Creator:Brian Wesson   Copyright@2023 </footer>
+
+<footer> Creator: Brian Wesson   Copyright@2023 </footer>
 
 </html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments Section with Database</title>
+
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #ff8c00, #ff0000);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 4em;
+      background: linear-gradient(135deg, #000000, #0000ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 90%; /* Adjusted width for better responsiveness */
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    textarea {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    hr {
+      width: 90%; /* Adjusted width for better responsiveness */
+      margin: 20px 0;
+      border: 1px solid #ddd;
+    }
+
+    #comments {
+      width: 90%; /* Adjusted width for better responsiveness */
+      max-width: 600px;
+    }
+
+    p {
+      background-color: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      overflow-wrap: break-word; /* Added to handle long words */
+    }
+
+    textarea {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      word-wrap: break-word; /* Added to handle long sentences */
+    }
+
+    #commentCounts {
+      position: fixed;
+      padding: 10px;
+      color: #333; /* Text color */
+      font-size: 16px; /* Adjust as needed */
+      background: none; /* Remove background */
+      border: none; /* Remove border */
+      top: 0;
+      right: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>COMMENT WORLD</h1>
+
+  <!-- Comment Form -->
+  <form id="commentForm">
+    <label for="comment">Leave a Comment:</label>
+    <textarea id="comment" name="comment" rows="4" required></textarea>
+    <button type="button" id="submitCommentBtn">Submit Comment</button>
+  </form>
+
+  <hr>
+
+  <!-- Display Comments -->
+  <div id="comments"></div>
+
+  <!-- ... (your existing HTML code) ... -->
+
+<script>
+  const dbName = 'commentsDatabase';
+  let db;
+
+  const request = indexedDB.open(dbName, 1);
+
+  request.onerror = function(event) {
+    console.error("Database error: " + event.target.errorCode);
+  };
+
+  request.onupgradeneeded = function(event) {
+    const db = event.target.result;
+
+    db.createObjectStore("comments", { keyPath: "id", autoIncrement: true });
+  };
+
+  request.onsuccess = function(event) {
+    db = event.target.result;
+
+    function leaveComment() {
+      const commentText = document.getElementById('comment').value;
+
+      const transaction = db.transaction(["comments"], "readwrite");
+      const objectStore = transaction.objectStore("comments");
+
+      const comment = { text: commentText };
+      const addRequest = objectStore.add(comment);
+
+      addRequest.onsuccess = function() {
+        alert("Comment submitted successfully!");
+        document.getElementById('commentForm').reset();
+        displayComments();
+      };
+
+      addRequest.onerror = function() {
+        alert("Error submitting comment. Please try again.");
+      };
+    }
+
+    function displayComments() {
+      const commentsContainer = document.getElementById('comments');
+      commentsContainer.innerHTML = "";
+
+      const objectStore = db.transaction("comments").objectStore("comments");
+
+      objectStore.openCursor().onsuccess = function(event) {
+        const cursor = event.target.result;
+
+        if (cursor) {
+          const comment = document.createElement('div');
+          comment.innerHTML = `
+            <p>${cursor.value.text}</p>
+          `;
+          commentsContainer.appendChild(comment);
+
+          cursor.continue();
+        }
+      };
+    }
+
+    // Display existing comments on page load
+    displayComments();
+
+    // Add event listener for button click
+    document.getElementById('submitCommentBtn').addEventListener('click', leaveComment);
+  };
+</script><!-- ... (your existing HTML code) ... -->
+
+
+</body>
+<footer> Creator:Brian Wesson   Copyright@2023 </footer>
+
+</html>

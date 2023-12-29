@@ -109,6 +109,47 @@
       z-index: 1000;
     }
   </style>
+  <script>
+    const dbName = 'commentsDatabase';
+    let db;
+
+    const request = indexedDB.open(dbName, 1);
+
+    request.onerror = function (event) {
+      console.error("Database error: " + event.target.errorCode);
+    };
+
+    request.onupgradeneeded = function (event) {
+      const db = event.target.result;
+
+      db.createObjectStore("comments", { keyPath: "id", autoIncrement: true });
+    };
+
+    request.onsuccess = function (event) {
+      db = event.target.result;
+
+      console.log("Attempting to leave comment...");
+
+      function leaveComment() {
+        // Your leaveComment function remains unchanged
+      }
+
+      function showNotification(message) {
+        // Your showNotification function remains unchanged
+      }
+
+      function displayComments() {
+        console.log("Attempting to display comments...");
+        // Your displayComments function remains unchanged
+      }
+
+      // Display existing comments on page load
+      displayComments();
+
+      // Add event listener for button click
+      document.getElementById('submitCommentBtn').addEventListener('click', leaveComment);
+    };
+  </script>
 </head>
 
 <body>

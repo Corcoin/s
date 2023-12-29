@@ -144,7 +144,7 @@
 
     request.onsuccess = function (event) {
       db = event.target.result;
-
+       console.log("Attempting to leave comment...")
       function leaveComment() {
         const commentText = document.getElementById('comment').value;
 
@@ -155,12 +155,14 @@
         const addRequest = objectStore.add(comment);
 
         addRequest.onsuccess = function () {
+          console.log("Comment submitted successfully!");
           showNotification("Comment submitted successfully!");
           document.getElementById('commentForm').reset();
           displayComments();
         };
 
         addRequest.onerror = function () {
+          console.error("Error submitting comment. Please try again.");
           showNotification("Error submitting comment. Please try again.");
         };
       }
@@ -178,6 +180,7 @@
       }
 
       function displayComments() {
+        console.log("Attempting to display comments...");
         const commentsContainer = document.getElementById('comments');
         commentsContainer.innerHTML = "";
 
@@ -205,9 +208,9 @@
       document.getElementById('submitCommentBtn').addEventListener('click', leaveComment);
     };
   </script><!-- ... (your existing HTML code) ... -->
-
+ <footer> Creator: Brian Wesson   Copyright@2023 </footer>
 </body>
 
-<footer> Creator: Brian Wesson   Copyright@2023 </footer>
+
 
 </html>
